@@ -6,17 +6,18 @@ Some regions of genome are highly heterozygous, which contain two alleles at the
 
 Here, we developed a new and quick method separated haplotigs basing on sequence similarity. The idea is simple: we use gene nt sequences (can be from the same species or shorter evolutionary distance species) as the marker, mapped the marker to the assembly. If a contig (haplotig) is associated to another contig (primary contig), most of regions of them should be very similarity even the same. Therefore, we can find the same marker between them. One drawback of this method may not work for those contigs that do not contain any genes.
 
+
 ## Requirments
 - Python 2.7 or higher
 - BLAST 2.2.30+
 - Mummer 4.0
 
+
 ## Installation
 No installation required, just download the pipeline from github.
 ```
-git clone https://github.com/asdcid/.git
+https://github.com/asdcid/Haplotig-separation.git
 ```
-
 
 ## Usage
 This method requires a genome assembly (fasta format) and a whole set of gene nt sequences (fasta format) from the same species or shorter evolutionary distance species. 
