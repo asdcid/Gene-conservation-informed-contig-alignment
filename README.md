@@ -70,4 +70,4 @@ The final result is in the final_result directory.
 
 **figures** directory is the dot-plot between primary contig and its associated haplotig. 
 
-**summary** file is the datails of comparison between primary contigs and their associated haplotigs.
+**summary** file is the datails of comparison between primary contigs and their associated haplotigs. 1-to-1: the unique mapping; m-to-m: the multiple mapping. Both 1-to-1, m-to-m and coverage information are from Mummer dnadiff result.
