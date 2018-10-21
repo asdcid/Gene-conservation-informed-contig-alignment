@@ -23,7 +23,7 @@ https://github.com/asdcid/Haplotig-separation.git
 ## Usage
 This method requires a genome assembly (fasta format) and a whole set of gene nt sequences (fasta format) from the same species or shorter evolutionary distance species. 
 
-The path of BLAST and Mummer should be set into the environment path first, or change "export PATH=xxxx" in the run.sh. In addition, only the path of **genome**, **genes** and **outputDir** needed to be set. other parameters can use default.
+The path of BLAST and Mummer should be set into the environment path first, or change "export PATH=xxxx" in the script/run.sh. In addition, only the path of **genome**, **genes** and **outputDir** needed to be set. other parameters can use default.
 ```
 #############################################
 #set path of Mummer
@@ -61,7 +61,7 @@ minCoverge=80
 #############################################
 ```
 
-After modify the run.sh script, just directly run **./run.sh**.
+After modify the script/run.sh, just directly run it (./run.sh).
 
 ## OutputFiles
 The final result is in the final_result directory. 
