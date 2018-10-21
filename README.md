@@ -9,6 +9,7 @@ Here, we developed a new and quick method separated haplotigs basing on sequence
 
 ## Requirments
 - Python 2.7 or higher
+- Matplotlib package (Python)
 - BLAST 2.2.30+
 - Mummer 4.0
 
