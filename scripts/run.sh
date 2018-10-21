@@ -1,25 +1,18 @@
 #!/bin/bash
 
-#$ -q hugemem.q
-#$ -l virtual_free=10g,h_vmem=10.1g
-#$ -pe threads 20
-#$ -cwd
-#$ -N default
-
 set -e
 
 #############################################
 #set path of Mummer
-export PATH='/home/rob/devel/mummer4/install/bin/':$PATH
-export PATH='/home/raymond/devel/gnuplot/install/bin/':$PATH
+export PATH='/path/of/mummer/':$PATH
 #set path of Blast
 export PATH='/path/of/blast/':$PATH
 
 #the path of genome assembly file, fasta format
-genome='../ori/canu_1kb.fa'
+genome=''
 
 #the path of gene nt sequence, fasta format
-genes='../Egra_gene/test.fa'
+genes=''
 
 #the path of directory for storing output files, should be an empty directory
 outputDir='result'
