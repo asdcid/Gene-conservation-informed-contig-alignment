@@ -64,4 +64,10 @@ minCoverge=80
 After modify the run.sh script, just directly run **./run.sh**.
 
 ## OutputFiles
-The final result is in the final_result directory. **separate_info** file indicates the primary contigs and their associated haplotigs. **figures** directory is the dot-plot between primary contig and its associated haplotig. **summary** file is the datails of comparison between primary contigs and their associated haplotigs.
+The final result is in the final_result directory. 
+
+**separate_info** file indicates the primary contigs and their associated haplotigs. 
+
+**figures** directory is the dot-plot between primary contig and its associated haplotig. 
+
+**summary** file is the datails of comparison between primary contigs and their associated haplotigs.
