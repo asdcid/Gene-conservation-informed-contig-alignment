@@ -1,11 +1,4 @@
 #!/bin/bash
-
-#$ -q hugemem.q
-#$ -l virtual_free=10g,h_vmem=10.1g
-#$ -pe threads 20
-#$ -cwd
-#$ -N default
-
 set -e
 
 SOURCE=$(dirname $0})/scripts/
