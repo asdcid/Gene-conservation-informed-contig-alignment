@@ -1,0 +1,292 @@
+#!/bin/bash
+
+#$ -q hugemem.q
+#$ -l virtual_free=10g,h_vmem=10.1g
+#$ -pe threads 20
+#$ -cwd
+#$ -N default
+
+set -e
+
+SOURCE=$(dirname $0})/scripts/
+TIME=$(date +%s)
+
+
+usage()
+{
+echo '''
+[GBHS Gene-Based Haplotig separation. Separating haplotigs from assembly based on gene mapping]
+
+Usage: GBHS -g assembly.fa -g genes.fa [options]
+
+Required:
+    -a      assembly file, fasta format
+    -g      gene nt sequence file, fasta format
+
+Options:
+    -o      outputDir. Default is basename of assembly file + timestamp in the current directory
+    -t      number of threads. Default is 10
+    -i      minimun identity for blastn. Default is 80
+    -m      the minimum number of aligned gene that each contig contains. Default is 3
+    -l      the minimum fraction of aligned length in a gene. If the aligned length of a gene is lower than this fraction, this gene would not consider as a aligned gene. Deafult is 0.7
+    -c      the percentage of minimum coverage between the possible primary and its associated haplotigs. Default is 80
+    -f      fraction = the number of aligend gene in contig A which also aligned to contig B / total aligned gene in contig A. If the fracion > minGeneCover, these two contigs could be the possible primary contig and associated haplotig. Default is 0.8
+'''
+}
+
+
+#set default
+threads=10
+minIdentity=80
+minGene=3
+minAlignLength=0.7
+minCoverage=80
+minGeneCover=0.8
+
+#regular expression, test whether some arguments are integer of float
+floRe='^[0-9]+([.][0-9]+)?$'
+intRe='^[0-9]+$'
+
+#get arguments
+while getopts ":ha:g:o:t:i:m:l:f:c:" opt
+do
+  case $opt in
+    a)
+      genome=$OPTARG
+      if [ ! -f "$genome" ]
+      then
+          echo "ERROR: $genome is not a file"
+          exit 1
+      fi
+      ;;
+    g)
+      genes=$OPTARG
+      if [ ! -f "$genes" ]
+      then
+          echo "ERROR: $genes is not a file"
+          exit 1
+      fi
+      ;;
+    o)
+      outputDir=$OPTARG
+      ;;
+    t)
+      threads=$OPTARG
+      if ! [[ $threads =~ $intRe ]]
+      then
+          echo "ERROR: threads should be an integer, $threads is not an integer"
+          exit 1
+      fi
+      ;;
+    i)
+      minIdentity=$OPTARG
+      if ! [[ $minIdentity =~ $intRe ]] || [[ $minIdentity -gt 100 ]] || [[ $minIdentity -lt 1 ]]
+      then
+          echo "ERROR: minIdentity should be an integer (1-100)"
+          exit 1
+      fi
+      ;;
+    m)
+      minGene=$OPTARG
+      if ! [[ $minGene =~ $intRe ]]
+      then
+          echo "ERROR: minGene should be an integer, $minGene is not an integer"
+          exit 1
+      fi
+      ;;
+    l)
+      minAlignLength=$OPTARG
+      if ! [[ $minAlignLength =~ $floRe ]] || (( $(echo "$minAlignLength 1" | awk '{print ($1 > $2)}') )) || (( $(echo "$minAlignLength 0" | awk '{print ($1 < $2)}') ))
+      then
+          echo "ERROR: minAlignLength should be 0 - 1, $minAlignLength is not out of range"
+          exit 1
+      fi
+      ;;
+    c)
+      minCoverage=$OPTARG
+      if ! [[ $minCoverage =~ $intRe ]] || [[ $minCoverage -gt 100 ]] || [[ $minCoverage -lt 1 ]]
+      then
+          echo "ERROR: minCoverage should be an integer (1-100)"
+          exit 1
+      fi
+      ;;
+    f)
+      minGeneCover=$OPTARG
+      if ! [[ $minGeneCover =~ $floRe ]] || (( $(echo "$minGeneCover 1" | awk '{print ($1 > $2)}') )) || (( $(echo "$minGeneCover 0" | awk '{print ($1 < $2)}') ))
+      then
+          echo "ERROR: minGeneCover should be 0 - 1, $minGeneCover is not out of range"
+          exit 1
+      fi
+      ;;
+    h)
+      usage
+      exit 0
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      usage
+      exit 1
+
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      usage
+      exit 1
+      ;;
+  esac
+done
+
+#check whether set the required arguments
+if [ -z "$genome" ] || [ -z "$genes" ]
+then
+    usage
+    exit 1
+fi
+
+#set outputDir if not point out
+if [ -z "$outputDir" ]
+then
+    outputDir=$PWD/$(basename ${genome%%.fa*})_$TIME
+fi
+
+#output setting
+echo 'Parameters:'
+echo 'genome'            $genome
+echo 'genes'             $genes
+echo 'outputDir'         $outputDir
+echo 'threads'           $threads
+echo 'minIdentity'       $minIdentity
+echo 'minGene'           $minGene
+echo 'minAlignLength'    $minAlignLength
+echo 'minCoverage'       $minCoverage
+echo 'minGeneCover'      $minGeneCover
+
+
+#test whether mummer and blast is in the path
+if ! [ -x "$(command -v makeblastdb)" ]
+then
+    echo 'ERROR: makeblastdb (BLAST+ package) did not be found, please add it into the path (e.g "export PATH=/path/of/script/:$PATH") before running this script'
+    exit 1
+fi
+
+if ! [ -x "$(command -v blastn)" ]
+then
+    echo 'ERROR: blastn (BLAST+ package) did not be found, please add it into the path (e.g "export PATH=/path/of/script/:$PATH") before running this script'
+    exit 1
+fi
+
+if ! [ -x "$(command -v nucmer)" ]
+then
+    echo 'ERROR: nucmer (mummer package) did not be found, please add it into the path (e.g "export PATH=/path/of/script/:$PATH") before running this script'
+    exit 1
+fi
+
+if ! [ -x "$(command -v dnadiff)" ]
+then
+    echo 'dnadiff (mummer package) did not be found, please add it into the path (e.g "export PATH=/path/of/script/:$PATH") before running this script'
+    exit
+fi
+
+if ! [ -x "$(command -v mummerplot)" ]
+then
+    echo 'mummerplot (mummer package) did not be found, please add it into the path (e.g "export PATH=/path/of/script/:$PATH") before running this script'
+    exit
+fi
+
+mkdir -p $outputDir
+
+#build index
+reference=$(basename $genome)
+
+cp $genome $outputDir/
+
+makeblastdb \
+    -in $outputDir/$reference \
+    -dbtype nucl
+
+echo "Finished step 1"
+
+#blast
+blastOutput=$outputDir/${reference%%.fa*}.blast.out
+
+blastn \
+    -query $genes \
+    -db $outputDir/$reference \
+    -out $blastOutput \
+    -perc_identity $minIdentity \
+    -evalue 1e-5 \
+    -outfmt 7 \
+    -num_threads $threads
+
+#remove blast index
+rm $outputDir/${reference}.nhr
+rm $outputDir/${reference}.nin
+rm $outputDir/${reference}.nsq
+
+echo "Finished step 2"
+
+#filter blast output
+filterOutput=$outputDir/${reference%%.fa*}.filter.out
+python $SOURCE/filter.py \
+    $blastOutput \
+    $filterOutput \
+    $outputDir/$reference \
+    $genes \
+    $minGene \
+    $minAlignLength \
+    $minGeneCover
+
+echo "Finished step 3"
+#get possible primary contig and its associated haplotig
+pairOutput=$outputDir/${reference%%.fa*}.scaf.out
+python $SOURCE/getPair.py \
+    $filterOutput \
+    $pairOutput
+
+
+echo "Finished step 4"
+
+#make each contig in *.scaf.out into a single fasta file
+scafOutputDir=$outputDir/scafs
+python $SOURCE/getScaf.py \
+    $filterOutput \
+    $scafOutputDir \
+    $outputDir/$reference
+
+echo "Finished step 5"
+
+#plot the figure between possible primary contig and its associated haplotig, and get the coverage between them. Result in $outputDir/mummer_result and $outputDir/$mummer_plot
+mummerOutput=$outputDir/mummer_result
+mummerPlotOutput=$outputDir/mummer_plot
+./$SOURCE/mummer.sh \
+    $pairOutput \
+    $scafOutputDir \
+    $mummerOutput \
+    $mummerPlotOutput
+
+echo "Finished step 6"
+
+#summarize mummer result
+summaryOutput=$outputDir/final_result
+python $SOURCE/summary.py \
+    $mummerOutput \
+    $summaryOutput \
+    $minCoverage
+
+echo "Finished step 7"
+
+#move the dot-plot figure between primary contig and its associated haplotig to final_result directory.
+figures=$summaryOutput/figures
+./$SOURCE/getFigure.sh \
+    $summaryOutput \
+    $mummerPlotOutput \
+    $figures
+
+echo "Finished step 8"
+
+#get the primary.fasta and haplotigs.fasta
+python $SOURCE/getSeq.py \
+    $summaryOutput \
+    $outputDir/$reference 
+
+echo "DONE"
