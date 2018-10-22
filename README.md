@@ -23,45 +23,24 @@ https://github.com/asdcid/Haplotig-separation.git
 ## Usage
 This method requires a genome assembly (fasta format) and a whole set of gene nt sequences (fasta format) from the same species or shorter evolutionary distance species. 
 
-The path of BLAST and Mummer should be set into the environment path first, or change "export PATH=xxxx" in the script/run.sh. In addition, only the path of **genome**, **genes** and **outputDir** needed to be set. other parameters can use default.
+The path of BLAST and Mummer should be set into the environment path first. 
 ```
-#############################################
-#set path of Mummer
-export PATH='/path/of/mummer/':$PATH
-#set path of Blast
-export PATH='/path/of/blast/':$PATH
+Usage: GBHS -g assembly.fa -g genes.fa [options]
 
-#the path of genome assembly file, fasta format
-genome='../ori/canu_1kb.fa'
+Required:
+    -a      assembly file, fasta format
+    -g      gene nt sequence file, fasta format
 
-#the path of gene nt sequence, fasta format
-genes='../Egra_gene/gene.fa'
-
-#the path of directory for storing output files, should be an empty directory
-outputDir='result'
-
-#how many CPU wants to use
-threads=20
-
-#minimum identity for blastn
-minIdentity=0.8
-
-#the minimum number of aligned gene that each contig contains
-minGene=3
-
-#the minimum fraction of aligned length in a gene. If the aligned length of a gene is lower than this fraction, this gene would not consider as a aligned gene.
-minAlignLength=0.7
-
-#fraction = the number of aligend gene in contig A which also aligned to contig B / total aligned gene in contig A. If the fracion > minGeneCover, these two contigs could be the possible primary contig and associated haplotig.
-minGeneCover=0.8
-
-#the percentage of minimum coverage between the possible primary and its associated haplotigs
-minCoverge=80
-
-#############################################
+Options:
+    -o      outputDir. Default is basename of assembly file + timestamp in the current directory
+    -t      number of threads. Default is 10
+    -i      minimun identity for blastn. Default is 80
+    -m      the minimum number of aligned gene that each contig contains. Default is 3
+    -l      the minimum fraction of aligned length in a gene. If the aligned length of a gene is lower than this fraction, this gene would not consider as a aligned gene. Deafult is 0.7
+    -c      the percentage of minimum coverage between the possible primary and its associated haplotigs. Default is 80
+    -f      fraction = the number of aligend gene in contig A which also aligned to contig B / total aligned gene in contig A. If the fracion > minGeneCover, these two contigs could be the possible primary contig and associated haplotig. Default is 0.8
 ```
 
-After modify the script/run.sh, just directly run it (./run.sh).
 
 ## OutputFiles
 The final result is in the final_result directory. 
