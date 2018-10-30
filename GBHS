@@ -251,7 +251,7 @@ echo "Finished step 5"
 #plot the figure between possible primary contig and its associated haplotig, and get the coverage between them. Result in $outputDir/mummer_result and $outputDir/$mummer_plot
 mummerOutput=$outputDir/mummer_result
 mummerPlotOutput=$outputDir/mummer_plot
-./$SOURCE/mummer.sh \
+$SOURCE/mummer.sh \
     $pairOutput \
     $scafOutputDir \
     $mummerOutput \
@@ -270,7 +270,7 @@ echo "Finished step 7"
 
 #move the dot-plot figure between primary contig and its associated haplotig to final_result directory.
 figures=$summaryOutput/figures
-./$SOURCE/getFigure.sh \
+$SOURCE/getFigure.sh \
     $summaryOutput \
     $mummerPlotOutput \
     $figures
