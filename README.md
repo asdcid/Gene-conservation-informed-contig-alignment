@@ -1,4 +1,4 @@
-# Haplotig-separation
+# Targeted contig alignment
 Separation haplotigs from the genome assembly
 
 ## Introduction
