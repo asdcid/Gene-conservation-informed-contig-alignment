@@ -8,9 +8,9 @@ TIME=$(date +%s)
 usage()
 {
 echo '''
-[GBHS Gene-Based Haplotig separation. Separating haplotigs from assembly based on gene mapping]
+[GCICA, Gene-conservation-informed-contig-alignment. Separating haplotigs from assembly based on gene mapping]
 
-Usage: GBHS -g assembly.fa -g genes.fa [options]
+Usage: GCICA -g assembly.fa -g genes.fa [options]
 
 Required:
     -a      assembly file, fasta format
