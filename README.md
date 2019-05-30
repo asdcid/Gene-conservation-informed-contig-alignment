@@ -1,4 +1,4 @@
-# Targeted contig alignment
+# Gene conservation informed contig alignment (GCICA)
 Separation haplotigs from the genome assembly
 
 ## Introduction
@@ -17,7 +17,7 @@ Here, we developed a new and quick method separated haplotigs basing on sequence
 ## Installation
 No installation required, just download the pipeline from github.
 ```
-https://github.com/asdcid/Haplotig-separation.git
+git clone https://github.com/asdcid/Gene-conservation-informed-contig-alignment.git
 ```
 
 ## Usage
@@ -25,7 +25,7 @@ This method requires a genome assembly (fasta format) and a whole set of gene nt
 
 The path of BLAST and Mummer should be set into the environment path first. 
 ```
-Usage: GBHS -g assembly.fa -g genes.fa [options]
+Usage: GCICA -g assembly.fa -g genes.fa [options]
 
 Required:
     -a      assembly file, fasta format
